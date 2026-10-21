@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Worm Docs Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f7f7f5;
+  --fg: #1a1a1a;
+  --fg-dim: #6b6b6b;
+  --surface: #ffffff;
+  --surface-hover: #f0f0ed;
+  --border: #e2e0db;
+  --accent: #2563eb;
+  --accent-light: #dbeafe;
+  --accent-dim: #93b4f5;
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --purple: #7c3aed;
+  --purple-light: #ede9fe;
+  --teal: #0d9488;
+  --teal-light: #ccfbf1;
+  --tag-bg: #f0f0ed;
+  --tag-fg: #444;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161618;
+    --fg: #e4e4e0;
+    --fg-dim: #8a8a84;
+    --surface: #1e1e21;
+    --surface-hover: #27272b;
+    --border: #333336;
+    --accent: #6d9ef8;
+    --accent-light: #1e2a42;
+    --accent-dim: #3d5a8e;
+    --green: #4ade80;
+    --green-light: #14261c;
+    --amber: #fbbf24;
+    --amber-light: #2a2210;
+    --red: #f87171;
+    --red-light: #2d1515;
+    --purple: #a78bfa;
+    --purple-light: #1e1530;
+    --teal: #2dd4bf;
+    --teal-light: #0d231f;
+    --tag-bg: #27272b;
+    --tag-fg: #b8b8b2;
+    --shadow: 0 1px 3px rgba(0,0,0,0.3);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161618;
+  --fg: #e4e4e0;
+  --fg-dim: #8a8a84;
+  --surface: #1e1e21;
+  --surface-hover: #27272b;
+  --border: #333336;
+  --accent: #6d9ef8;
+  --accent-light: #1e2a42;
+  --accent-dim: #3d5a8e;
+  --green: #4ade80;
+  --green-light: #14261c;
+  --amber: #fbbf24;
+  --amber-light: #2a2210;
+  --red: #f87171;
+  --red-light: #2d1515;
+  --purple: #a78bfa;
+  --purple-light: #1e1530;
+  --teal: #2dd4bf;
+  --teal-light: #0d231f;
+  --tag-bg: #27272b;
+  --tag-fg: #b8b8b2;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'IBM Plex Sans Thai', 'IBM Plex Sans', -apple-system, sans-serif;
+  margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+  line-height: 1.55;
+}
+
+.wrap { max-width: 960px; margin: 0 auto; }
+
+h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 4px; text-wrap: balance; }
+h1 small { font-weight: 400; color: var(--fg-dim); font-size: 0.85rem; display: block; margin-top: 2px; }
+h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 12px; }
+
+.header {
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.back { font-size: 0.82rem; color: var(--accent); text-decoration: none; white-space: nowrap; }
+.back:hover { text-decoration: underline; }
+
+.paths { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.path-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--fg);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.path-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.path-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.flow-section { margin-bottom: 24px; }
+.flow-title { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fg-dim); margin-bottom: 10px; }
+.flow-steps { display: flex; flex-direction: column; gap: 0; }
+.flow-step {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 0 10px;
+  min-height: 60px;
+}
+.flow-step .dot-col { display: flex; flex-direction: column; align-items: center; }
+.flow-step .dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--surface);
+  flex-shrink: 0;
+  margin-top: 4px;
+  position: relative;
+  z-index: 1;
+}
+.flow-step.highlight .dot { background: var(--accent); }
+.flow-step .line { width: 2px; flex: 1; background: var(--border); margin: 2px 0; }
+.flow-step:last-child .line { display: none; }
+.flow-step .content { padding-bottom: 16px; min-width: 0; }
+.flow-step .step-label { font-size: 0.8rem; font-weight: 600; color: var(--fg-dim); margin-bottom: 2px; }
+.flow-step.highlight .step-label { color: var(--accent); }
+
+.doc-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 6px;
+}
+.doc-card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.doc-card.expanded { border-color: var(--accent); }
+.doc-card .doc-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+.doc-card .doc-desc { font-size: 0.8rem; color: var(--fg-dim); margin-top: 2px; }
+.doc-card .doc-detail {
+  display: none;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+.doc-card.expanded .doc-detail { display: block; }
+.doc-detail ul { margin: 4px 0 8px; padding-left: 18px; }
+.doc-detail li { margin-bottom: 3px; }
+.doc-detail .related { margin-top: 6px; }
+.doc-detail .related-label { font-weight: 600; font-size: 0.78rem; color: var(--fg-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+.doc-detail .tag {
+  display: inline-block;
+  background: var(--tag-bg);
+  color: var(--tag-fg);
+  font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 1px 7px;
+  border-radius: 3px;
+  margin: 2px 3px 2px 0;
+  cursor: pointer;
+}
+.doc-detail .tag:hover { background: var(--accent-light); color: var(--accent); }
+
+.badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.badge.hub { background: var(--accent-light); color: var(--accent); }
+.badge.core { background: var(--green-light); color: var(--green); }
+.badge.guide { background: var(--amber-light); color: var(--amber); }
+.badge.ref { background: var(--purple-light); color: var(--purple); }
+.badge.deep { background: var(--teal-light); color: var(--teal); }
+
+.group { margin-bottom: 20px; }
+.group-header {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-dim);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.group-icon { font-size: 1rem; }
+
+.tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+.tab {
+  background: none;
+  border: none;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--fg-dim);
+  padding: 8px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.tab:hover { color: var(--fg); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.doc-card.path-highlight { border-color: var(--accent); background: var(--accent-light); }
+.doc-card.path-highlight .doc-name { font-weight: 700; }
+.path-order {
+  display: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 20px;
+  flex-shrink: 0;
+  margin-right: 6px;
+}
+.doc-card.path-highlight .path-order { display: inline-block; }
+
+.doc-card-row { display: flex; align-items: center; }
+.doc-card-row .doc-name { flex: 1; min-width: 0; }
+
+.callout {
+  background: var(--accent-light);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+.callout strong { color: var(--accent); }
+
+footer { margin-top: 40px; padding: 20px 0; font-size: 0.78rem; color: var(--fg-dim); border-top: 1px solid var(--border); }
+
+@media (max-width: 600px) {
+  .paths { gap: 6px; }
+  .path-btn { font-size: 0.78rem; padding: 5px 10px; }
+  .tab { padding: 6px 10px; font-size: 0.82rem; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <h1>Worm Docs Navigator
+    <small>FoodSERP — 30+ docs ทั้งหมด จัดเรียงตามเป้าหมาย</small>
+  </h1>
+  <a class="back" href="../">← rungkarn.github.io</a>
+</div>
+
+<div class="callout">
+  <strong>เริ่มตรงนี้:</strong> เลือก "เป้าหมาย" ด้านล่างเพื่อดูว่าต้องอ่าน doc ไหนบ้าง ตามลำดับ หรือกดแท็บ "ทุกไฟล์" เพื่อดูรายการทั้งหมดจัดกลุ่มตามหัวข้อ กดที่ไฟล์เพื่อดูรายละเอียด
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="paths">เป้าหมาย</button>
+  <button class="tab" data-tab="all">ทุกไฟล์ (จัดกลุ่ม)</button>
+  <button class="tab" data-tab="flow">Data Flow</button>
+</div>
+
+<div class="tab-content active" id="tab-paths">
+  <div class="paths" id="path-buttons"></div>
+  <div id="path-detail"></div>
+  <div id="path-docs"></div>
+</div>
+
+<div class="tab-content" id="tab-all"></div>
+
+<div class="tab-content" id="tab-flow">
+  <div class="flow-section">
+    <div class="flow-title">End-to-End Data Flow: ภาพ → โมเดล</div>
+    <div class="flow-steps" id="flow-steps"></div>
+  </div>
+</div>
+
+<footer>FoodSERP — Instance Segmentation &amp; Classification of Caterpillars on Food Trays</footer>
+
+</div>
+
+<script>
+const DOCS = [
+  { id: "project-map", file: "Worm Project Map.md", badge: "hub", badgeLabel: "HUB",
+    desc: "แผนที่โปรเจค — สถานะ, ผลโมเดล, data flow, โครงสร้างไฟล์ทั้งหมด",
+    detail: "ไฟล์นี้คือ <b>จุดเริ่มต้น</b> ถ้าจะอ่านอันเดียว อ่านอันนี้ มีทุกอย่าง: สถานะปัจจุบันของทุกขั้นตอน, ตารางผลโมเดล, Mermaid data flow, โครงสร้างไฟล์บน Lanta, สรุป label merge rules, และตาราง 'อยากรู้อะไร → ไปไฟล์ไหน'",
+    contains: ["สถานะ 6 ขั้นตอน", "ตาราง mAP โมเดลทั้งหมด", "Data Flow (Mermaid)", "โครงสร้าง Lanta", "Label merge rules สรุป", "Segfail/Reseg overview", "To-do list"],
+    related: ["label-merge", "pipeline", "training-plan", "data-layout"],
+    group: "overview", priority: 1 },
+  { id: "worklog", file: "WORKLOG.md", badge: "ref", badgeLabel: "LOG",
+    desc: "บันทึกการทำงาน — ปัญหาที่พบ, ผลทดสอบ, การตัดสินใจ",
+    detail: "บันทึกเรียงตามเวลา ใช้เป็น reference ค้นหาว่า 'ทำไมถึงตัดสินใจแบบนี้' หรือ 'เคยลองอะไรมาแล้ว'",
+    contains: ["ไทม์ไลน์งาน", "ปัญหาที่เจอ", "ผลทดสอบ"],
+    related: ["project-map"], group: "overview", priority: 5 },
+  { id: "project-notes", file: "PROJECT_NOTES.md", badge: "ref", badgeLabel: "REF",
+    desc: "บันทึกย่อของโปรเจค",
+    detail: "โน้ตเบ็ดเตล็ดที่ไม่เข้ากลุ่มไหน",
+    contains: ["โน้ตทั่วไป"], related: ["project-map"], group: "overview", priority: 6 },
+  { id: "pipeline", file: "PIPELINE.md", badge: "core", badgeLabel: "CORE",
+    desc: "Pipeline ต่อ 1 ภาพ: SAM2 segment → กรอง → shape filter → color → NMS → save pkl",
+    detail: "อธิบาย 13 ขั้นตอนของ <code>worm_segment_pipeline.py</code> ตั้งแต่ SAM3 calibrate จนถึง save pkl มี flow diagram (SVG + Mermaid) ไม่ใช่เรื่อง label หรือ training แต่เป็นเรื่อง 'ทำไม pkl ถึงมีคอลัมน์พวกนี้'",
+    contains: ["13 ขั้นตอน filter", "Flag bits + bUse codes", "Mermaid/SVG diagram", "CLI arguments"],
+    related: ["mask-sets", "project-map"], group: "pipeline", priority: 2 },
+  { id: "mask-sets", file: "MASK_SETS.md", badge: "core", badgeLabel: "CORE",
+    desc: "6 ชุด mask ใน processed/ — อันไหนคือ PRODUCTION อันไหนคือ legacy",
+    detail: "อธิบายว่าทำไมมี <code>sam2_mask_raw</code>, <code>sam2_mask_reviewed</code>, <code>segmentation_masks</code> ฯลฯ ชุดไหนคือตัวจริง (<b>segmentation_masks</b>) และทำไม index ของแต่ละชุดไม่ตรงกัน (ภาพ ≥ 200)",
+    contains: ["6 mask directories", "PRODUCTION = segmentation_masks", "Index mismatch ภาพ 200+"],
+    related: ["pipeline", "data-layout"], group: "pipeline", priority: 3 },
+  { id: "worm-cls-api", file: "pipeline/WORM_CLS_API.md", badge: "ref", badgeLabel: "API",
+    desc: "Color classifier API — worm_score ที่ pipeline ใช้กรอง",
+    detail: "API doc สำหรับ color classifier ที่ pipeline ขั้น 7 เรียกใช้",
+    contains: ["worm_score API", "Color features"], related: ["pipeline"], group: "pipeline", priority: 7 },
+  { id: "crop-roi-api", file: "pipeline/CROP_ROI_API.md", badge: "ref", badgeLabel: "API",
+    desc: "Crop ROI API — ตัด mask ออกมาเป็น npy",
+    detail: "API สำหรับ crop ROI จาก pkl → npy สำหรับ labeling/training",
+    contains: ["Crop pipeline"], related: ["pipeline", "prep-label-rois"], group: "pipeline", priority: 8 },
+  { id: "mask-view-api", file: "pipeline/MASK_VIEW_API.md", badge: "ref", badgeLabel: "API",
+    desc: "Mask viewer API",
+    detail: "API สำหรับดู mask overlay บนภาพ",
+    contains: ["Visualization API"], related: ["pipeline"], group: "pipeline", priority: 8 },
+  { id: "prep-label-rois", file: "pipeline/PREP_LABEL_ROIS.md", badge: "ref", badgeLabel: "API",
+    desc: "เตรียม ROI crop สำหรับ labeling",
+    detail: "เตือนเรื่อง index mismatch ระหว่าง mask sets",
+    contains: ["ROI preparation", "Index mismatch warning"], related: ["mask-sets", "crop-roi-api"], group: "pipeline", priority: 8 },
+  { id: "data-layout", file: "DATA_LAYOUT.md", badge: "deep", badgeLabel: "DEEP",
+    desc: "โครงสร้างข้อมูลทั้งหมด — ปัญหา label ผูก index, release layer proposal, 23 sections",
+    detail: "ไฟล์ใหญ่สุดในโปรเจค อธิบาย <b>ทำไม</b> ต้องมี release layer: label ผูกกับลำดับแถวไม่ใช่ id, dataset build ซ้ำ 15 ชุด §23 มี end-to-end guide 'จาก label → view พร้อมเทรน'",
+    contains: ["ปัญหา label=ลำดับแถว", "6 mask dirs ไม่ตรงกัน", "Release layer design", "§23 label→train guide"],
+    related: ["mask-sets", "training-plan", "label-merge"], group: "data", priority: 3 },
+  { id: "training-plan", file: "TRAINING_DATA_PLAN.md", badge: "core", badgeLabel: "CORE",
+    desc: "แผนเทรน: final_select output → classification / segmentation / noise filter / miss-seg",
+    detail: "อธิบายว่า <code>final_20260930.csv</code> (174K instances) ใช้เทรนอะไรได้บ้าง: classification 3 phases, instance seg, noise filter, miss-seg detector แต่ละ task ใช้ไฟล์ไหน",
+    contains: ["final_select output files", "4 training tasks", "Class distribution", "File paths on Lanta"],
+    related: ["label-merge", "data-layout", "maskrcnn", "yolo"], group: "data", priority: 2 },
+  { id: "label-merge", file: "LABEL_MERGE.md", badge: "deep", badgeLabel: "DEEP",
+    desc: "THE doc: 6-layer merge hierarchy, MaskOracle, final_select — ทุกอย่างเรื่อง label",
+    detail: "ไฟล์สำคัญที่สุดเรื่อง data pipeline (942 บรรทัด): <ul><li>§1 ทำไม 'เทียบ 2 ไฟล์แล้วเดา' พัง (worm-000200)</li><li>§2 ลำดับ 6 ชั้น: gate → exclusions → lineage → authority → overrides → additions</li><li>§4 ความเสี่ยง 5 ข้อ (dataset_stats.txt ไม่มี provenance)</li><li>§6 Implementation: MaskOracle 3 tiers, decision table, final_select</li></ul>",
+    contains: ["6-layer merge", "MaskOracle", "worm-000200 disaster", "final_select.py", "2 types of 'new wins'"],
+    related: ["project-map", "training-plan", "reseg-rounds"], group: "label", priority: 1 },
+  { id: "reseg-rounds", file: "RESEG_ROUNDS.md", badge: "guide", badgeLabel: "GUIDE",
+    desc: "Reseg round management — loop ของ merge → pack → GUI → ผลกลับมา",
+    detail: "อธิบาย loop: label CSV → merge → symlink → pack_reseg.py → ส่ง zip → GUI reseg → ผล CSV กลับมา รอบ 2+ ยังไม่ได้ทำ",
+    contains: ["Merge loop", "Round 2 data flow", "pack_reseg workflow"],
+    related: ["label-merge", "pack-reseg", "reseg-gui2"], group: "label", priority: 3 },
+  { id: "segfail", file: "SEGFAIL.md", badge: "core", badgeLabel: "CORE",
+    desc: "ML priority queue หา mask เสีย — HistGradientBoosting + 16 shape features",
+    detail: "ระบบ ML ที่จัดลำดับ mask ตามความน่าจะผิด ใช้ 16 shape features, แบ่ง 4 กลุ่ม (ok/not_worm/other/miss_seg), top-100 accuracy ~44%",
+    contains: ["Feature extraction", "Scoring model", "build_segfail_v6.py"],
+    related: ["pipeline", "reseg-gui2"], group: "reseg", priority: 3 },
+  { id: "reseg-gui2", file: "RESEG_GUI2.md", badge: "deep", badgeLabel: "DEEP",
+    desc: "Reseg GUI v2 — SAM2/SAM3 click+drag → เลือก mask → save pkl (current tool)",
+    detail: "เครื่องมือหลักที่ทีมใช้แก้ mask ปัจจุบัน คิว 8,794 masks / 789 ภาพ",
+    contains: ["GUI architecture", "SAM2/SAM3 engines", "Save sequence", "Keyboard shortcuts"],
+    related: ["reseg-team-guide", "reseg-save", "segfail"], group: "reseg", priority: 2 },
+  { id: "reseg-team-guide", file: "RESEG_TEAM_GUIDE.md", badge: "guide", badgeLabel: "GUIDE",
+    desc: "คู่มือทีม reseg — สำหรับ karn/dream/gun/smile",
+    detail: "คู่มือใช้งาน GUI v2 สำหรับทีม: วิธีเปิด, ปุ่มลัด, เมื่อไหร่กด OK/Undecidable/Skip, ตารางอ้างอิง doc อื่น",
+    contains: ["Setup guide", "ปุ่มลัดทั้งหมด", "Decision guide", "Doc reference table"],
+    related: ["reseg-gui2", "reseg-save"], group: "reseg", priority: 3 },
+  { id: "reseg-save", file: "RESEG_SAVE_SEQUENCE.md", badge: "deep", badgeLabel: "DEEP",
+    desc: "Save sequence ของ reseg — pkl_backup, roi_pkl, label_overrides, session_state",
+    detail: "อธิบายลำดับการเขียนไฟล์ทั้ง 5 ขั้นตอนเมื่อกด OK รวมถึง label_overrides.&lt;user&gt;.csv (39 แถว, 8 แถวมี bug)",
+    contains: ["5-step save sequence", "pkl_backup", "label_overrides.<user>.csv", "8 buggy rows"],
+    related: ["reseg-gui2", "label-merge"], group: "reseg", priority: 4 },
+  { id: "reseg-workflow", file: "RESEG_WORKFLOW.md", badge: "ref", badgeLabel: "REF",
+    desc: "Reseg workflow overview",
+    detail: "ภาพรวม workflow ของการ reseg",
+    contains: ["Workflow steps"], related: ["reseg-gui2", "reseg-rounds"], group: "reseg", priority: 5 },
+  { id: "reseg-gui1", file: "RESEGMENTATION_GUI.md", badge: "ref", badgeLabel: "OLD",
+    desc: "Reseg GUI v1 (DEPRECATED) — ppawong's tool, ช้ากว่า v2",
+    detail: "เครื่องมือเก่า ใช้กับ img 1-66 เท่านั้น ช้ากว่า v2 มาก (~1 นาที/ตัว vs ~30 วินาที)",
+    contains: ["Legacy GUI"], related: ["reseg-gui2"], group: "reseg", priority: 9 },
+  { id: "relabel-gui", file: "RELABEL_GUI.md", badge: "ref", badgeLabel: "REF",
+    desc: "Relabel GUI — เปลี่ยน class (5→4 Not worm) ผ่าน GUI",
+    detail: "GUI สำหรับเปลี่ยน class ของ mask ที่ label แล้ว เขียน override ลง label_overrides",
+    contains: ["Class override GUI"], related: ["label-merge", "reseg-gui2"], group: "reseg", priority: 6 },
+  { id: "coverage-design", file: "tool/coverage/DESIGN.md", badge: "core", badgeLabel: "CORE",
+    desc: "Coverage GUIs ทั้งชุด — 3 GUI, 3 session, ต่อกันผ่าน CSV",
+    detail: "ภาพรวมของ final_viewer + coverage_gui + missing_worm_gui ที่ใช้หาหนอนที่หายไป",
+    contains: ["3 GUI overview", "final_viewer", "coverage_gui", "missing_worm_gui"],
+    related: ["missing-worm-gui", "reseg-gui2"], group: "coverage", priority: 3 },
+  { id: "missing-worm-gui", file: "tool/coverage/MISSING_WORM_GUI.md", badge: "deep", badgeLabel: "DEEP",
+    desc: "Missing worm GUI — หาหนอนที่ SAM พลาด, ลากกรอบ → SAM2/SAM3 → save",
+    detail: "GUI ใหม่สำหรับหาหนอนที่หายไป สืบทอดจาก AddWormGUI, มี SAM3-text, GPU required",
+    contains: ["GUI architecture", "SAM3-text", "Parameters", "Keyboard shortcuts"],
+    related: ["coverage-design", "reseg-gui2"], group: "coverage", priority: 4 },
+  { id: "maskrcnn", file: "tool/mask_rcnn/README.md", badge: "guide", badgeLabel: "GUIDE",
+    desc: "Mask R-CNN setup — torchvision ResNet50-FPN, COCO builder, SLURM",
+    detail: "วิธี setup และเทรน Mask R-CNN บน Lanta ใช้ build_coco_dataset.py",
+    contains: ["Setup", "build_coco_dataset.py", "Training flags"],
+    related: ["maskrcnn-log", "training-plan"], group: "training", priority: 2 },
+  { id: "maskrcnn-log", file: "tool/mask_rcnn/experiments_log.md", badge: "deep", badgeLabel: "DEEP",
+    desc: "Mask R-CNN experiments — best mAP50-95=0.502, 12 sections ของ lessons learned",
+    detail: "686 บรรทัด: resize trap, anchor analysis, 3 eval bugs (pycocotools), dihedral aug, mask source bug, locked val comparison — <b>อ่านก่อนเทรนรอบใหม่</b>",
+    contains: ["12 experiment sections", "eval bugs", "anchor tuning", "Best config"],
+    related: ["maskrcnn", "yolo-log"], group: "training", priority: 2 },
+  { id: "yolo", file: "tool/yolo_seg/README.md", badge: "guide", badgeLabel: "GUIDE",
+    desc: "YOLO11-seg setup",
+    detail: "Setup YOLO11-seg + build_yolo_dataset.py",
+    contains: ["Setup", "YOLO dataset builder"],
+    related: ["yolo-log", "training-plan"], group: "training", priority: 3 },
+  { id: "yolo-log", file: "tool/yolo_seg/experiments_log.md", badge: "ref", badgeLabel: "LOG",
+    desc: "YOLO11-seg experiments — 3 runs, best mAP50-95=0.319 (138 images)",
+    detail: "3 runs บน 138 images: model size ไม่ใช่ bottleneck, data quality คือ ceiling",
+    contains: ["3 experiment runs", "Model size finding"],
+    related: ["yolo", "maskrcnn-log"], group: "training", priority: 4 },
+  { id: "yolo-summary", file: "tool/yolo_seg/สรุปผลการทดลอง-YOLO11seg.md", badge: "ref", badgeLabel: "REF",
+    desc: "สรุปผลการทดลอง YOLO11-seg (ภาษาไทย)",
+    detail: "สรุปภาษาไทยของผลทดลอง YOLO",
+    contains: ["Thai summary"], related: ["yolo-log"], group: "training", priority: 5 },
+  { id: "mask2former", file: "tool/mask2former/README.md", badge: "guide", badgeLabel: "GUIDE",
+    desc: "Mask2Former setup — HuggingFace Swin-Tiny, ยังไม่ได้เทรนจริง",
+    detail: "Setup Mask2Former: ต่างจาก Mask R-CNN ยังไง (0-based class, num_queries), วิธี cache weights บน Lanta",
+    contains: ["Setup vs Mask R-CNN table", "Training knobs", "Swin backbone options"],
+    related: ["maskrcnn", "training-plan"], group: "training", priority: 3 },
+  { id: "yolo-conf", file: "tool/yolo_seg/conf_sweep_2class.md", badge: "ref", badgeLabel: "REF",
+    desc: "YOLO confidence threshold sweep",
+    detail: "ผลการ sweep confidence threshold",
+    contains: ["Confidence sweep results"], related: ["yolo-log"], group: "training", priority: 7 },
+  { id: "pack-reseg", file: "PACK_RESEG.md", badge: "ref", badgeLabel: "REF",
+    desc: "pack_reseg.py — สร้าง zip สำหรับส่งไป relabel",
+    detail: "วิธีใช้ pack_reseg.py pack ผล reseg เป็น zip",
+    contains: ["Pack workflow"], related: ["reseg-rounds"], group: "ops", priority: 5 },
+  { id: "pack-reseg-tool", file: "tool/PACK_RESEG.md", badge: "ref", badgeLabel: "REF",
+    desc: "pack_reseg tool doc",
+    detail: "doc ของ tool pack_reseg",
+    contains: ["Tool doc"], related: ["pack-reseg"], group: "ops", priority: 6 },
+  { id: "smr-migration", file: "SMR_MIGRATION.md", badge: "ref", badgeLabel: "REF",
+    desc: "SMR migration — ย้ายข้อมูลไป smr ชั่วคราว (1-19 ต.ค. 2026)",
+    detail: "แผนย้ายข้อมูลไป smr server ระหว่าง Lanta ปิด",
+    contains: ["Migration plan", "sync scripts"], related: ["project-map"], group: "ops", priority: 6 },
+  { id: "pkl-maintenance", file: "tool/pkl_maintenance/PKL_MAINTENANCE.md", badge: "ref", badgeLabel: "REF",
+    desc: "pkl maintenance tools",
+    detail: "เครื่องมือดูแล pkl files",
+    contains: ["pkl tools"], related: ["mask-sets"], group: "ops", priority: 7 },
+  { id: "deploy", file: "deploy/README.md", badge: "ref", badgeLabel: "REF",
+    desc: "Deploy docs",
+    detail: "เอกสาร deploy",
+    contains: ["Deploy guide"], related: [], group: "ops", priority: 7 },
+  { id: "sam3-readme", file: "tool/sam3/sam3_docs/README.md", badge: "ref", badgeLabel: "REF",
+    desc: "SAM3 documentation",
+    detail: "Doc ของ SAM3 model",
+    contains: ["SAM3 usage"], related: ["pipeline"], group: "other", priority: 6 },
+  { id: "sam3-merged", file: "tool/sam3/sam3_docs/2026-07-19-merged-worm-investigation.md", badge: "ref", badgeLabel: "REF",
+    desc: "SAM3 merged worm investigation",
+    detail: "การตรวจสอบ merged worm จาก SAM3",
+    contains: ["Investigation report"], related: ["sam3-readme"], group: "other", priority: 7 },
+  { id: "mobilesam", file: "tool/mobilesam_finetune/README.md", badge: "ref", badgeLabel: "REF",
+    desc: "MobileSAM fine-tune (experimental)",
+    detail: "ทดลอง fine-tune MobileSAM — ไม่ได้ใช้ต่อ",
+    contains: ["Experiment"], related: [], group: "other", priority: 8 },
+  { id: "bottle", file: "tool/bottle/README.md", badge: "ref", badgeLabel: "REF",
+    desc: "Bottle detection tool",
+    detail: "เครื่องมือตรวจจับขวด",
+    contains: ["Bottle detection"], related: [], group: "other", priority: 9 },
+  { id: "maskrcnn-claude", file: "tool/mask_rcnn/CLAUDE.md", badge: "ref", badgeLabel: "REF",
+    desc: "CLAUDE.md สำหรับ Mask R-CNN directory",
+    detail: "Context file สำหรับ Claude Code ที่ทำงานใน mask_rcnn/",
+    contains: ["Claude context"], related: ["maskrcnn"], group: "other", priority: 9 },
+];
+
+const GROUPS = {
+  overview: { label: "ภาพรวมโปรเจค", icon: "\u{1f30d}" },
+  pipeline: { label: "Segmentation Pipeline (ต่อภาพ)", icon: "⚙️" },
+  data: { label: "โครงสร้างข้อมูล & Training Plan", icon: "\u{1f4ca}" },
+  label: { label: "Label Merge & Snapshots", icon: "\u{1f3f7}️" },
+  reseg: { label: "Reseg — แก้ mask", icon: "\u{1f527}" },
+  coverage: { label: "Coverage — หาหนอนที่หาย", icon: "\u{1f50d}" },
+  training: { label: "Training Models", icon: "\u{1f4bb}" },
+  ops: { label: "Operations & Migration", icon: "\u{1f4e6}" },
+  other: { label: "อื่นๆ", icon: "\u{1f4c1}" },
+};
+
+const PATHS = [
+  { id: "new", label: "เพิ่งมาใหม่", desc: "ยังไม่เคยเห็นโปรเจคนี้ อ่าน 3 ไฟล์นี้ก่อน", docs: ["project-map", "pipeline", "mask-sets"] },
+  { id: "train", label: "จะเทรนโมเดล", desc: "เข้าใจ data pipeline จนถึงเทรน", docs: ["project-map", "training-plan", "label-merge", "maskrcnn", "maskrcnn-log", "mask2former"] },
+  { id: "data", label: "งง data pipeline", desc: "เข้าใจว่า label มาจากไหน merge ยังไง ถึง dataset", docs: ["project-map", "label-merge", "reseg-rounds", "data-layout", "training-plan"] },
+  { id: "reseg", label: "จะทำ reseg", desc: "เข้าใจ reseg GUI และวิธีทำงาน", docs: ["reseg-team-guide", "reseg-gui2", "segfail", "reseg-save", "label-merge"] },
+  { id: "review", label: "จะ review ผล", desc: "ดูว่าโมเดลทำได้แค่ไหน ปัญหาคืออะไร", docs: ["project-map", "maskrcnn-log", "yolo-log", "training-plan"] },
+  { id: "coverage", label: "จะหาหนอนที่หาย", desc: "ใช้ coverage tools หาหนอนที่ SAM พลาด", docs: ["coverage-design", "missing-worm-gui", "reseg-gui2"] },
+];
+
+const FLOW_STEPS = [
+  { label: "1. ถ่ายภาพ", text: "814 ภาพถาดอาหาร (3264×2448 jpg)", docs: [], highlight: false },
+  { label: "2. SAM2 + SAM3 Segment", text: "สร้าง mask อัตโนมัติ → กรอง 13 ขั้น → save pkl", docs: ["pipeline", "mask-sets"], highlight: false },
+  { label: "3. Human Label (7 class)", text: "675 ภาพ, 188K masks → labels_current.csv (Class, Filename)", docs: ["data-layout"], highlight: false },
+  { label: "4. Segfail + Reseg", text: "ML หา mask เสีย → ทีม 4 คนแก้ผ่าน GUI → save กลับ pkl + label_overrides", docs: ["segfail", "reseg-gui2", "reseg-save"], highlight: true },
+  { label: "5. Label Merge (6 ชั้น)", text: "gate → exclusions → lineage → authority → overrides → additions → snapshot", docs: ["label-merge"], highlight: true },
+  { label: "6. final_select", text: "กรอง overlap + bUse + deduplicate → final_20260930.csv (174K instances)", docs: ["label-merge", "training-plan"], highlight: true },
+  { label: "7. build_release", text: "CSV + pkl → instances.parquet + manifest.yaml (มี provenance)", docs: ["training-plan", "data-layout"], highlight: false },
+  { label: "8. export_view", text: "→ COCO / YOLO / ImageFolder → เทรนโมเดลได้", docs: ["training-plan", "maskrcnn", "yolo", "mask2former"], highlight: false },
+];
+
+const docById = {};
+DOCS.forEach(d => docById[d.id] = d);
+
+function renderDocCard(d, order) {
+  const card = document.createElement("div");
+  card.className = "doc-card";
+  card.dataset.id = d.id;
+  card.innerHTML = '<div class="doc-card-row"><span class="path-order">' + (order || "") + '</span><span class="doc-name">' + d.file + '</span><span class="badge ' + d.badge + '">' + d.badgeLabel + '</span></div><div class="doc-desc">' + d.desc + '</div><div class="doc-detail">' + d.detail + (d.contains ? "<ul>" + d.contains.map(function(c){ return "<li>" + c + "</li>"; }).join("") + "</ul>" : "") + (d.related && d.related.length ? '<div class="related"><span class="related-label">เกี่ยวข้อง: </span>' + d.related.map(function(r){ var rd = docById[r]; return rd ? '<span class="tag" data-goto="' + r + '">' + rd.file + '</span>' : ""; }).join("") + '</div>' : "") + '</div>';
+  card.addEventListener("click", function(e) {
+    if (e.target.classList.contains("tag")) {
+      var gotoId = e.target.dataset.goto;
+      var target = document.querySelector('.doc-card[data-id="' + gotoId + '"]');
+      if (target) {
+        document.querySelectorAll(".doc-card.expanded").forEach(function(c){ if(c!==target) c.classList.remove("expanded"); });
+        target.classList.add("expanded");
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+    card.classList.toggle("expanded");
+  });
+  return card;
+}
+
+document.querySelectorAll(".tab").forEach(function(tab) {
+  tab.addEventListener("click", function() {
+    document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
+    document.querySelectorAll(".tab-content").forEach(function(tc){ tc.classList.remove("active"); });
+    tab.classList.add("active");
+    document.getElementById("tab-" + tab.dataset.tab).classList.add("active");
+  });
+});
+
+var pathBtns = document.getElementById("path-buttons");
+var pathDetail = document.getElementById("path-detail");
+var pathDocs = document.getElementById("path-docs");
+
+PATHS.forEach(function(p, i) {
+  var btn = document.createElement("button");
+  btn.className = "path-btn";
+  if (i === 0) btn.classList.add("active");
+  btn.textContent = p.label;
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".path-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    showPath(p);
+  });
+  pathBtns.appendChild(btn);
+});
+
+function showPath(p) {
+  pathDetail.innerHTML = '<div style="margin-bottom:14px;font-size:0.88rem;color:var(--fg-dim)">' + p.desc + '</div>';
+  pathDocs.innerHTML = "";
+  p.docs.forEach(function(id, i) {
+    var d = docById[id];
+    if (!d) return;
+    var card = renderDocCard(d, i + 1);
+    card.classList.add("path-highlight");
+    pathDocs.appendChild(card);
+  });
+}
+showPath(PATHS[0]);
+
+var allTab = document.getElementById("tab-all");
+var groupOrder = ["overview", "pipeline", "data", "label", "reseg", "coverage", "training", "ops", "other"];
+groupOrder.forEach(function(gk) {
+  var g = GROUPS[gk];
+  var docs = DOCS.filter(function(d){ return d.group === gk; }).sort(function(a,b){ return a.priority - b.priority; });
+  if (!docs.length) return;
+  var section = document.createElement("div");
+  section.className = "group";
+  section.innerHTML = '<div class="group-header"><span class="group-icon">' + g.icon + '</span> ' + g.label + ' (' + docs.length + ')</div>';
+  docs.forEach(function(d){ section.appendChild(renderDocCard(d)); });
+  allTab.appendChild(section);
+});
+
+var flowContainer = document.getElementById("flow-steps");
+FLOW_STEPS.forEach(function(step) {
+  var el = document.createElement("div");
+  el.className = "flow-step" + (step.highlight ? " highlight" : "");
+  el.innerHTML = '<div class="dot-col"><div class="dot"></div><div class="line"></div></div><div class="content"><div class="step-label">' + step.label + '</div><div style="font-size:0.85rem;margin-bottom:4px">' + step.text + '</div>' + (step.docs.length ? step.docs.map(function(id){ var d = docById[id]; return d ? '<span class="tag" style="cursor:pointer" onclick="jumpToDoc(\'' + id + '\')">' + d.file + '</span>' : ""; }).join(" ") : "") + '</div>';
+  flowContainer.appendChild(el);
+});
+
+function jumpToDoc(id) {
+  document.querySelectorAll(".tab").forEach(function(t){ t.classList.remove("active"); });
+  document.querySelectorAll(".tab-content").forEach(function(tc){ tc.classList.remove("active"); });
+  document.querySelector('[data-tab="all"]').classList.add("active");
+  document.getElementById("tab-all").classList.add("active");
+  setTimeout(function() {
+    var card = document.querySelector('#tab-all .doc-card[data-id="' + id + '"]');
+    if (card) { card.classList.add("expanded"); card.scrollIntoView({ behavior: "smooth", block: "center" }); }
+  }, 50);
+}
+</script>
+</body>
+</html>
