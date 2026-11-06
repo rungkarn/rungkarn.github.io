@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Data Prep Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root {
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --ink: #1a1c24;
+  --muted: #5c6478;
+  --faint: #8993a8;
+  --line: #dce1ea;
+  --accent: #2d5be3;
+  --accent-soft: #e8edfb;
+  --step-bg: #f0f3f9;
+  --code-bg: #eef1f6;
+  --code-ink: #2b3248;
+  --warn: #c2670a;
+  --warn-bg: #fef3e6;
+  --ok: #1a7d4e;
+  --ok-bg: #e6f6ee;
+  --font-body: "IBM Plex Sans Thai", "Leelawadee UI", Tahoma, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1017;
+    --surface: #181b24;
+    --ink: #e2e5ec;
+    --muted: #929bb2;
+    --faint: #6b7590;
+    --line: #282d3c;
+    --accent: #7b9bff;
+    --accent-soft: #1e2640;
+    --step-bg: #161923;
+    --code-bg: #1c2030;
+    --code-ink: #c8cfe0;
+    --warn: #e8993a;
+    --warn-bg: #2a2010;
+    --ok: #3acd7e;
+    --ok-bg: #0f2418;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1017;
+  --surface: #181b24;
+  --ink: #e2e5ec;
+  --muted: #929bb2;
+  --faint: #6b7590;
+  --line: #282d3c;
+  --accent: #7b9bff;
+  --accent-soft: #1e2640;
+  --step-bg: #161923;
+  --code-bg: #1c2030;
+  --code-ink: #c8cfe0;
+  --warn: #e8993a;
+  --warn-bg: #2a2010;
+  --ok: #3acd7e;
+  --ok-bg: #0f2418;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.72;
+  -webkit-font-smoothing: antialiased;
+}
+.page {
+  max-width: 780px; margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Header ── */
+.back { font-family: var(--font-mono); font-size: 13px; color: var(--faint); display: inline-block; margin-bottom: 24px; }
+h1 { font-size: 28px; font-weight: 700; margin: 0 0 6px; line-height: 1.3; letter-spacing: -0.01em; }
+.subtitle { color: var(--muted); margin: 0 0 8px; font-size: 15px; }
+.meta { font-size: 13px; color: var(--faint); margin: 0 0 36px; font-family: var(--font-mono); }
+
+/* ── Flow overview ── */
+.flow-strip {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  margin-bottom: 32px; padding: 16px 18px;
+  background: var(--step-bg); border-radius: 10px; border: 1px solid var(--line);
+}
+.flow-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500;
+  background: var(--accent-soft); color: var(--accent); white-space: nowrap;
+}
+.flow-chip .num { font-family: var(--font-mono); font-weight: 600; font-size: 11px; opacity: .7; }
+.flow-arrow { color: var(--faint); font-size: 14px; }
+
+/* ── Env box ── */
+.env-box {
+  background: var(--code-bg); color: var(--code-ink); border-radius: 8px;
+  padding: 14px 18px; margin-bottom: 36px; font-family: var(--font-mono); font-size: 13px; line-height: 1.8;
+  overflow-x: auto;
+}
+.env-box .label { color: var(--faint); }
+
+/* ── Step cards ── */
+.step { margin-bottom: 28px; }
+.step-head {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--accent);
+}
+.step-num {
+  font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+  color: var(--surface); background: var(--accent); border-radius: 5px;
+  padding: 2px 8px; flex-shrink: 0;
+}
+.step-title { font-size: 19px; font-weight: 700; margin: 0; }
+.step-when { font-size: 13px; color: var(--faint); margin: 2px 0 12px; }
+.step-body { padding-left: 0; }
+
+/* ── Code blocks ── */
+pre {
+  background: var(--code-bg); color: var(--code-ink); border-radius: 8px;
+  padding: 14px 16px; margin: 10px 0 14px; font-family: var(--font-mono);
+  font-size: 13px; line-height: 1.65; overflow-x: auto; white-space: pre;
+  border: 1px solid var(--line);
+}
+code {
+  font-family: var(--font-mono); font-size: 13px;
+  background: var(--code-bg); padding: 1px 5px; border-radius: 4px;
+}
+pre code { background: none; padding: 0; }
+.cmd-label { color: var(--faint); font-size: 12px; margin-bottom: 2px; display: block; }
+
+/* ── Tables ── */
+.table-wrap { overflow-x: auto; margin: 10px 0 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { text-align: left; font-weight: 600; padding: 8px 12px; background: var(--step-bg); border-bottom: 2px solid var(--line); white-space: nowrap; }
+td { padding: 7px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td:first-child { white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+
+/* ── Callout ── */
+.warn {
+  background: var(--warn-bg); border-left: 3px solid var(--warn);
+  padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0 14px;
+  font-size: 14px; color: var(--ink);
+}
+.ok-box {
+  background: var(--ok-bg); border-left: 3px solid var(--ok);
+  padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 10px 0 14px;
+  font-size: 14px;
+}
+
+/* ── Output tree ── */
+.tree {
+  font-family: var(--font-mono); font-size: 13px; line-height: 1.7;
+  background: var(--code-bg); padding: 14px 16px; border-radius: 8px;
+  overflow-x: auto; white-space: pre; border: 1px solid var(--line);
+  margin: 10px 0 14px;
+}
+.tree .comment { color: var(--faint); }
+
+/* ── Section divider ── */
+hr { border: none; border-top: 1px solid var(--line); margin: 36px 0; }
+
+/* ── Footer ── */
+.page-footer { margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .page { padding: 28px 16px 60px; }
+  h1 { font-size: 23px; }
+  .step-title { font-size: 17px; }
+  pre { font-size: 12px; padding: 12px 14px; }
+  table { font-size: 13px; }
+  th, td { padding: 6px 8px; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<a class="back" href="../">&#8592; rungkarn.github.io</a>
+
+<h1>Data Preparation Pipeline</h1>
+<p class="subtitle">ขั้นตอนเตรียมข้อมูล FoodSERP ตั้งแต่แรกจนถึง release — พร้อมคำสั่งที่ต้องเรียกทุกขั้น</p>
+<p class="meta">project: FoodSERP &middot; platform: Lanta HPC</p>
+
+<!-- ── Flow overview ── -->
+<div class="flow-strip">
+  <span class="flow-chip"><span class="num">0</span> Sync code</span>
+  <span class="flow-arrow">&#8594;</span>
+  <span class="flow-chip"><span class="num">1</span> SAM Segment</span>
+  <span class="flow-arrow">&#8594;</span>
+  <span class="flow-chip"><span class="num">2</span> Human Label + Reseg</span>
+  <span class="flow-arrow">&#8594;</span>
+  <span class="flow-chip"><span class="num">3</span> Label Merge</span>
+  <span class="flow-arrow">&#8594;</span>
+  <span class="flow-chip"><span class="num">4</span> Final Select</span>
+  <span class="flow-arrow">&#8594;</span>
+  <span class="flow-chip"><span class="num">5</span> Build Release</span>
+  <span class="flow-arrow">&#8594;</span>
+  <span class="flow-chip"><span class="num">6</span> Build Views</span>
+</div>
+
+<!-- ── Environment ── -->
+<div class="env-box">
+<span class="label">SSH:</span>   ssh lanta
+<span class="label">Conda:</span> /project/lt200264-saiwat/Env/segmentation
+<span class="label">SLURM:</span> account lt200280, partition compute
+<span class="label">Code:</span>  /project/lt200264-saiwat/WormProject/code
+<span class="label">Data:</span>  /project/lt200264-saiwat/WormProject/data/worm-24022026
+</div>
+
+<hr>
+
+<!-- ════════════ STEP 0 ════════════ -->
+<div class="step" id="step-0">
+  <div class="step-head">
+    <span class="step-num">0</span>
+    <h2 class="step-title">Sync code จาก local ไป Lanta</h2>
+  </div>
+  <p class="step-when">ทุกครั้งที่แก้โค้ดบนเครื่อง local</p>
+  <div class="step-body">
+    <span class="cmd-label">Windows (local)</span>
+    <pre><code>.\sync_lanta.ps1 push</code></pre>
+    <p>ตรวจสอบ: ไฟล์บน Lanta ต้อง git hash ตรงกับ local</p>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════ STEP 1 ════════════ -->
+<div class="step" id="step-1">
+  <div class="step-head">
+    <span class="step-num">1</span>
+    <h2 class="step-title">SAM Segmentation</h2>
+  </div>
+  <p class="step-when">เมื่อมีภาพถาดใหม่ (ปัจจุบัน 814 ภาพ &#x2014; เสร็จแล้ว)</p>
+  <div class="step-body">
+    <p><strong>โค้ด:</strong> <code>pipeline/worm_segment_pipeline.py</code></p>
+    <p><strong>ผลลัพธ์:</strong> <code>processed/segmentation_masks/&lt;stem&gt;.pkl</code> (814 ไฟล์)</p>
+    <ul style="list-style:disc;padding-left:20px;margin:6px 0">
+      <li>แต่ละ pkl มี: boundary polygon, bbox, score, bUse, สีค่ากลาง</li>
+      <li>ไฟล์ <code>.npy</code> = binary mask ต่อ instance</li>
+    </ul>
+    <div class="ok-box">ขั้นนี้เสร็จแล้ว ไม่ต้องรันซ้ำ ยกเว้นมีภาพใหม่จริง &#x200B;</div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════ STEP 2 ════════════ -->
+<div class="step" id="step-2">
+  <div class="step-head">
+    <span class="step-num">2</span>
+    <h2 class="step-title">Human Labeling + Reseg</h2>
+  </div>
+  <p class="step-when">หลัง segmentation เสร็จ / มี mask ที่ต้องซ่อม</p>
+  <div class="step-body">
+
+    <h3 style="font-size:16px;margin:16px 0 6px">2a. Label 7 คลาส</h3>
+    <p>คน label ผ่าน GUI &#8594; ได้ CSV: <code>labels/ground_truth_worms_&lt;source&gt;_&lt;date&gt;.csv</code></p>
+    <p>Format: <code>Class,Filename</code> (Class 0-6, Filename = <code>&lt;stem&gt;_&lt;idx&gt;.npy</code>)</p>
+
+    <h3 style="font-size:16px;margin:20px 0 6px">2b. Segfail Queue (จัดคิว mask น่าสงสัย)</h3>
+    <pre><code>cd /project/lt200264-saiwat/WormProject/code
+python -m tool.build_segfail_v6        # สร้าง feature จาก pkl
+python -m tool.score_unlabelled        # ให้คะแนน → เรียงคิว</code></pre>
+    <p><strong>ผลลัพธ์:</strong> <code>reseg_queue_&lt;date&gt;.csv</code></p>
+
+    <h3 style="font-size:16px;margin:20px 0 6px">2c. Reseg GUI v2 (ซ่อม mask + relabel)</h3>
+    <pre><code>python tool/worm_reseg_gui2.py --pkl-dir &lt;masks&gt; --save &lt;reseg/v2&gt;</code></pre>
+    <p><strong>ผลลัพธ์:</strong></p>
+    <ul style="list-style:disc;padding-left:20px;margin:6px 0">
+      <li>mask ใหม่เขียนกลับ pkl (bUse=3)</li>
+      <li><code>reseg/v2/label_overrides.&lt;user&gt;.csv</code> &#x2014; override class ต่อ instance</li>
+      <li><code>reseg/v2/sessions/</code>, <code>reseg/v2/backup/</code></li>
+    </ul>
+
+    <h3 style="font-size:16px;margin:20px 0 6px">2d. Pack &amp; ส่งไป relabel</h3>
+    <pre><code>python -m tool.pack_reseg --reseg-dir reseg/v2 --out &lt;zip&gt;</code></pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════ STEP 3 ════════════ -->
+<div class="step" id="step-3">
+  <div class="step-head">
+    <span class="step-num">3</span>
+    <h2 class="step-title">Label Merge</h2>
+  </div>
+  <p class="step-when">ได้ label CSV ใหม่จากทีม หรือมี override ใหม่</p>
+  <div class="step-body">
+    <p><strong>โค้ด:</strong> <code>tool/label_merge/</code> (module)</p>
+
+    <span class="cmd-label">dry-run (ไม่เขียนอะไร)</span>
+    <pre><code>L=/project/lt200264-saiwat/WormProject/data/worm-24022026/labels
+
+python -m tool.label_merge \
+    --base $L/worm-24022026-labels_current.csv \
+    --input $L/&lt;ไฟล์ใหม่&gt;.csv</code></pre>
+
+    <span class="cmd-label">เขียนจริง</span>
+    <pre><code>python -m tool.label_merge \
+    --base $L/worm-24022026-labels_current.csv \
+    --input $L/&lt;ไฟล์ใหม่&gt;.csv \
+    --out-dir $L --write</code></pre>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">กลไก merge 6 ชั้น</h3>
+    <div class="table-wrap">
+    <table>
+      <tr><th>ชั้น</th><th>ทำอะไร</th></tr>
+      <tr><td><code>0. gate</code></td><td>ตรวจ index basis ต่อภาพ (SAM2 vs SAM3)</td></tr>
+      <tr><td><code>1. exclusions</code></td><td>ตัดตาม <code>label_exclusions.csv</code></td></tr>
+      <tr><td><code>2. lineage</code></td><td>เลือกไฟล์ใหม่สุดของแต่ละสาย (nb, pc)</td></tr>
+      <tr><td><code>3. authority</code></td><td>ภาพนี้ใครเป็นเจ้าของ</td></tr>
+      <tr><td><code>4. overrides</code></td><td><code>label_overrides.csv</code> + per-user (latest row wins)</td></tr>
+      <tr><td><code>5. additions</code></td><td>ตัวแถมจาก pkl (src=&quot;extra&quot;)</td></tr>
+      <tr><td><code>6. write</code></td><td>snapshot + manifest &#8594; ขยับ symlink</td></tr>
+    </table>
+    </div>
+
+    <div class="warn">ชั้นที่ตัดของทิ้งโดยไม่พิมพ์จำนวน = จุดที่ข้อมูลผิดเข้ามาแบบเงียบ</div>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">ผลลัพธ์</h3>
+    <ul style="list-style:disc;padding-left:20px;margin:6px 0">
+      <li><code>worm-24022026-labels_&lt;date&gt;_&lt;N&gt;images.csv</code> &#x2014; snapshot ใหม่</li>
+      <li><code>decisions_&lt;date&gt;.csv</code>, <code>review_&lt;date&gt;.csv</code></li>
+      <li><code>segfail_pairs_&lt;date&gt;.csv</code>, <code>reseg_queue_&lt;date&gt;.csv</code></li>
+      <li>symlink <code>labels_current.csv</code> &#8594; snapshot ล่าสุด</li>
+    </ul>
+
+    <span class="cmd-label">ทดสอบ</span>
+    <pre><code>python -m unittest tool.test_label_merge    # 34 tests</code></pre>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════ STEP 4 ════════════ -->
+<div class="step" id="step-4">
+  <div class="step-head">
+    <span class="step-num">4</span>
+    <h2 class="step-title">Final Select</h2>
+  </div>
+  <p class="step-when">หลัง merge เสร็จ หรือ pkl เปลี่ยน (reseg ทำ mask เปลี่ยน)</p>
+  <div class="step-body">
+    <p><strong>โค้ด:</strong> <code>tool/label_merge/final_select.py</code></p>
+
+    <span class="cmd-label">ผ่าน SLURM (16 cores, ~1 ชม.)</span>
+    <pre><code>cd /project/lt200264-saiwat/WormProject
+
+sbatch code/slurm/run_final_select.sh \
+    /project/lt200264-saiwat/WormProject/data/worm-24022026/final \
+    --tag &lt;YYYYMMDD&gt;</code></pre>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">สิ่งที่ทำ</h3>
+    <ol style="padding-left:20px;margin:6px 0">
+      <li>อ่าน <code>labels_current.csv</code> + pkl ทุกภาพ</li>
+      <li>Deduplicate ด้วย pixel-level IoU NMS</li>
+      <li>Filter ตาม bUse (ตัด bUse=0,7)</li>
+      <li>แปลง bUse=6 &#8594; class 3 (Undecidable)</li>
+      <li>แยก output เป็น 3 กลุ่ม: train, noise, missseg</li>
+    </ol>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">ผลลัพธ์ (8 ไฟล์ ใน <code>final/</code>)</h3>
+    <div class="table-wrap">
+    <table>
+      <tr><th>ไฟล์</th><th>จำนวน</th><th>คืออะไร</th></tr>
+      <tr><td><code>final_&lt;tag&gt;.csv</code></td><td>~174K</td><td><strong>label สำหรับเทรน</strong> (class 0,1,2,3,6)</td></tr>
+      <tr><td><code>_detail.csv</code></td><td>~174K</td><td>labels + metadata ครบ</td></tr>
+      <tr><td><code>_dropped.csv</code></td><td>~59K</td><td>mask ที่ถูกตัดออก พร้อม reason</td></tr>
+      <tr><td><code>_noise.csv</code></td><td>~35K</td><td>class 4 (Not worm)</td></tr>
+      <tr><td><code>_noise_detail.csv</code></td><td>~35K</td><td>noise + detail</td></tr>
+      <tr><td><code>_missseg.csv</code></td><td>~16K</td><td>class 5 (Miss-seg)</td></tr>
+      <tr><td><code>_missseg_detail.csv</code></td><td>~16K</td><td>missseg + detail</td></tr>
+      <tr><td><code>_summary.txt</code></td><td>&#8212;</td><td>สรุปตัวเลขทุกขั้นตอน</td></tr>
+    </table>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════ STEP 5 ════════════ -->
+<div class="step" id="step-5">
+  <div class="step-head">
+    <span class="step-num">5</span>
+    <h2 class="step-title">Build Release</h2>
+  </div>
+  <p class="step-when">หลัง final_select เสร็จ</p>
+  <div class="step-body">
+    <p><strong>โค้ด:</strong> <code>pipeline/build_release.py</code></p>
+
+    <span class="cmd-label">ผ่าน SLURM (32 cores, ~10 นาที, CPU only)</span>
+    <pre><code>cd /project/lt200264-saiwat/WormProject
+sbatch code/slurm/run_build_release.sh</code></pre>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">สิ่งที่ทำ</h3>
+    <ol style="padding-left:20px;margin:6px 0">
+      <li>รวม final + noise + missseg CSV เป็นไฟล์เดียว</li>
+      <li>อ่าน pkl ทุกภาพ &#8594; resolve boundary, bbox, area, instance_id</li>
+      <li>ตรวจ QC (missing_pkl, row_out_of_range, decode_fail, suspect_index)</li>
+      <li>เขียน <code>instances.parquet</code> + <code>images.parquet</code> + <code>manifest.yaml</code></li>
+    </ol>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">คำสั่งเบื้องหลังใน SLURM script</h3>
+    <pre><code># รวม CSV
+head -1 "$FINAL" &gt; "$COMBINED"
+tail -n+2 "$FINAL" &gt;&gt; "$COMBINED"
+tail -n+2 "$NOISE" &gt;&gt; "$COMBINED"
+tail -n+2 "$MISSSEG" &gt;&gt; "$COMBINED"
+
+# Build
+python -m pipeline.build_release \
+    --csv          "$COMBINED" \
+    --masks-dir    "$ROOT/processed/segmentation_masks" \
+    --images-dir   "$ROOT/raw" \
+    --roi-mask-dir "$ROOT/processed/cropped/roi_mask" \
+    --out          "$REL" \
+    --workers 32</code></pre>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">ผลลัพธ์</h3>
+    <div class="table-wrap">
+    <table>
+      <tr><th>ไฟล์</th><th>คืออะไร</th></tr>
+      <tr><td><code>instances.parquet</code></td><td>ทุก instance: instance_id, image_id, class, bbox, boundary (RLE), area, score, qc_status</td></tr>
+      <tr><td><code>images.parquet</code></td><td>ข้อมูลภาพ: image_id, width, height, path</td></tr>
+      <tr><td><code>manifest.yaml</code></td><td>provenance: label path, masks path, sha256, build date, row counts</td></tr>
+    </table>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════ STEP 6 ════════════ -->
+<div class="step" id="step-6">
+  <div class="step-head">
+    <span class="step-num">6</span>
+    <h2 class="step-title">Build Views</h2>
+  </div>
+  <p class="step-when">หลัง build_release เสร็จ</p>
+  <div class="step-body">
+    <p><strong>โค้ด:</strong> <code>pipeline/build_crops.py</code> + <code>pipeline/export_view.py</code></p>
+
+    <span class="cmd-label">ผ่าน SLURM (32 cores, ~6 ชม.)</span>
+    <pre><code>cd /project/lt200264-saiwat/WormProject
+sbatch code/slurm/run_build_views.sh</code></pre>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">6a. Crops &#x2014; 3 background variants</h3>
+    <pre><code>for bg in raw blackout dim; do
+    python -m pipeline.build_crops --release "$REL" \
+        --images-dir "$RAW" --bg-mode "$bg" \
+        --workers 32 --skip-existing
+done</code></pre>
+    <div class="table-wrap">
+    <table>
+      <tr><th>bg-mode</th><th>ผลลัพธ์</th><th>crop dir</th></tr>
+      <tr><td><code>raw</code></td><td>ภาพจริงรอบ mask, pad 30 px</td><td><code>crops/pad30_raw/</code></td></tr>
+      <tr><td><code>blackout</code></td><td>เฉพาะ mask บนพื้นดำ, pad 0</td><td><code>crops/pad0_blackout/</code></td></tr>
+      <tr><td><code>dim</code></td><td>mask ชัด + background จาง</td><td><code>crops/pad30_dim0p3/</code></td></tr>
+    </table>
+    </div>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">6b. Segmentation views (COCO + YOLO)</h3>
+    <pre><code># Binary worm (1 class) — COCO
+python -m pipeline.export_view --release "$REL" \
+    --space binary_worm --format coco \
+    --out "$REL/views/coco_binary"
+
+# 4-class segmentation — COCO
+python -m pipeline.export_view --release "$REL" \
+    --space seg_cls4 --format coco \
+    --out "$REL/views/coco_cls4"
+
+# Binary worm — YOLO
+python -m pipeline.export_view --release "$REL" \
+    --space binary_worm --format yolo_seg \
+    --out "$REL/views/yolo_seg_binary"</code></pre>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">6c. Classification views (ImageFolder)</h3>
+    <pre><code># cls2 &times; 3 background variants (Phase 1+2)
+for variant in pad30_raw pad0_blackout pad30_dim0p3; do
+    python -m pipeline.export_view --release "$REL" \
+        --space cls2 --format imagefolder \
+        --out "$REL/views/cls2_${variant}" \
+        --crop-variant "$variant"
+done
+
+# cls4, cls5 (Phase 3)
+for space in cls4 cls5; do
+    python -m pipeline.export_view --release "$REL" \
+        --space "$space" --format imagefolder \
+        --out "$REL/views/${space}_raw" \
+        --crop-variant pad30_raw
+done</code></pre>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">6d. Noise filter + Miss-seg views</h3>
+    <pre><code># Noise filter: worm vs non_worm
+python -m pipeline.export_view --release "$REL" \
+    --space noise_filter --format imagefolder \
+    --out "$REL/views/noise_filter_raw" \
+    --crop-variant pad30_raw
+
+# Miss-seg detection: good_seg vs missseg
+python -m pipeline.export_view --release "$REL" \
+    --space missseg_detect --format imagefolder \
+    --out "$REL/views/missseg_detect_raw" \
+    --crop-variant pad30_raw</code></pre>
+
+    <h3 style="font-size:15px;margin:18px 0 8px">โครงสร้างผลลัพธ์สุดท้าย</h3>
+    <div class="tree">release/worm-24022026-v3/
+&#9500;&#9472;&#9472; instances.parquet          <span class="comment"># จากขั้น 5</span>
+&#9500;&#9472;&#9472; images.parquet
+&#9500;&#9472;&#9472; manifest.yaml
+&#9500;&#9472;&#9472; crops/
+&#9474;   &#9500;&#9472;&#9472; pad30_raw/             <span class="comment"># ~174K png</span>
+&#9474;   &#9500;&#9472;&#9472; pad0_blackout/
+&#9474;   &#9492;&#9472;&#9472; pad30_dim0p3/
+&#9492;&#9472;&#9472; views/
+    &#9500;&#9472;&#9472; coco_binary/           <span class="comment"># Task 1: Instance Segmentation</span>
+    &#9500;&#9472;&#9472; coco_cls4/
+    &#9500;&#9472;&#9472; yolo_seg_binary/
+    &#9500;&#9472;&#9472; cls2_raw/              <span class="comment"># Task 2: Classification Phase 1</span>
+    &#9500;&#9472;&#9472; cls2_blackout/         <span class="comment">#         Phase 2</span>
+    &#9500;&#9472;&#9472; cls2_dim/              <span class="comment">#         Phase 2</span>
+    &#9500;&#9472;&#9472; cls4_raw/              <span class="comment">#         Phase 3</span>
+    &#9500;&#9472;&#9472; cls5_raw/              <span class="comment">#         Phase 3</span>
+    &#9500;&#9472;&#9472; noise_filter_raw/      <span class="comment"># Task 3: Noise Filter</span>
+    &#9492;&#9472;&#9472; missseg_detect_raw/    <span class="comment"># Task 4: Miss-seg Detector</span></div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ════════════ Quick Reference ════════════ -->
+<h2 style="font-size:20px;margin:0 0 14px">Quick Reference</h2>
+
+<div class="table-wrap">
+<table>
+  <tr><th>ขั้น</th><th>คำสั่งหลัก</th><th>เวลา</th><th>GPU</th></tr>
+  <tr><td>0</td><td><code>.\sync_lanta.ps1 push</code></td><td>&lt; 1 นาที</td><td>ไม่</td></tr>
+  <tr><td>1</td><td><code>worm_segment_pipeline.py</code> (เสร็จแล้ว)</td><td>หลายชั่วโมง</td><td>ใช้</td></tr>
+  <tr><td>2</td><td><code>worm_reseg_gui2.py</code> (interactive)</td><td>ขึ้นกับคน</td><td>ใช้</td></tr>
+  <tr><td>3</td><td><code>python -m tool.label_merge ...</code></td><td>&lt; 1 นาที</td><td>ไม่</td></tr>
+  <tr><td>4</td><td><code>sbatch .../run_final_select.sh</code></td><td>~1 ชม.</td><td>ไม่</td></tr>
+  <tr><td>5</td><td><code>sbatch .../run_build_release.sh</code></td><td>~10 นาที</td><td>ไม่</td></tr>
+  <tr><td>6</td><td><code>sbatch .../run_build_views.sh</code></td><td>~6 ชม.</td><td>ไม่</td></tr>
+</table>
+</div>
+
+<h3 style="font-size:17px;margin:24px 0 10px">ทำซ้ำเมื่อไร?</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>เหตุการณ์</th><th>ต้องรันใหม่ตั้งแต่ขั้น</th></tr>
+  <tr><td>ได้ label CSV ใหม่</td><td>3 &#8594; 4 &#8594; 5 &#8594; 6</td></tr>
+  <tr><td>reseg ทำ mask เปลี่ยน (pkl เปลี่ยน)</td><td>4 &#8594; 5 &#8594; 6</td></tr>
+  <tr><td>แก้โค้ด builder/exporter</td><td>5 &#8594; 6 (หรือ 6 อย่างเดียว)</td></tr>
+  <tr><td>เพิ่ม label space ใหม่</td><td>6 อย่างเดียว</td></tr>
+  <tr><td>ภาพถาดใหม่</td><td>1 &#8594; 2 &#8594; 3 &#8594; 4 &#8594; 5 &#8594; 6</td></tr>
+</table>
+</div>
+
+<div class="page-footer">
+  FoodSERP &#x2014; Instance Segmentation &amp; Classification of Caterpillars on Food Trays
+</div>
+
+</div>
+</body>
+</html>
